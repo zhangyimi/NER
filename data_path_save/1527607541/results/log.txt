@@ -1,0 +1,23 @@
+2018-05-29 23:25:41,695:INFO: Namespace(CRF=True, batch_size=64, clip=5.0, demo_model='1521112368', dropout=0.5, embedding_dim=300, epoch=40, hidden_dim=300, lr=0.001, mode='train', optimizer='Adam', pretrain_embedding='random', shuffle=True, test_data='data_path', train_data='data_path', update_embedding=True)
+2018-05-29 23:25:51,166:INFO: 2018-05-29 23:25:49 epoch 1, step 1, loss: 119.1, global_step: 1
+2018-05-29 23:25:51,166:INFO: 2018-05-29 23:25:49 epoch 1, step 1, loss: 119.1, global_step: 1
+2018-05-29 23:31:35,928:INFO: 2018-05-29 23:25:49 epoch 1, step 300, loss: 3.821, global_step: 300
+2018-05-29 23:31:35,928:INFO: 2018-05-29 23:25:49 epoch 1, step 300, loss: 3.821, global_step: 300
+2018-05-29 23:37:35,175:INFO: 2018-05-29 23:25:49 epoch 1, step 600, loss: 3.65, global_step: 600
+2018-05-29 23:37:35,175:INFO: 2018-05-29 23:25:49 epoch 1, step 600, loss: 3.65, global_step: 600
+2018-05-29 23:41:27,221:INFO: 2018-05-29 23:25:49 epoch 1, step 792, loss: 3.025, global_step: 792
+2018-05-29 23:41:27,221:INFO: 2018-05-29 23:25:49 epoch 1, step 792, loss: 3.025, global_step: 792
+2018-05-29 23:41:29,902:INFO: ===========validation / test===========
+2018-05-29 23:41:29,902:INFO: ===========validation / test===========
+2018-05-29 23:41:47,044:INFO: processed 177232 tokens with 6192 phrases; found: 6179 phrases; correct: 4235.
+2018-05-29 23:41:47,044:INFO: processed 177232 tokens with 6192 phrases; found: 6179 phrases; correct: 4235.
+2018-05-29 23:41:47,044:INFO: accuracy:  96.78%; precision:  68.54%; recall:  68.39%; FB1:  68.47
+2018-05-29 23:41:47,044:INFO: accuracy:  96.78%; precision:  68.54%; recall:  68.39%; FB1:  68.47
+2018-05-29 23:41:47,045:INFO: LOC: precision:  75.09%; recall:  72.40%; FB1:  73.72  2774
+2018-05-29 23:41:47,045:INFO: LOC: precision:  75.09%; recall:  72.40%; FB1:  73.72  2774
+2018-05-29 23:41:47,045:INFO: ORG: precision:  55.57%; recall:  57.70%; FB1:  56.62  1382
+2018-05-29 23:41:47,045:INFO: ORG: precision:  55.57%; recall:  57.70%; FB1:  56.62  1382
+2018-05-29 23:41:47,046:INFO: PER: precision:  68.41%; recall:  69.76%; FB1:  69.08  2023
+2018-05-29 23:41:47,046:INFO: PER: precision:  68.41%; recall:  69.76%; FB1:  69.08  2023
+2018-05-29 23:41:48,127:INFO: 2018-05-29 23:41:47 epoch 2, step 1, loss: 2.344, global_step: 793
+2018-05-29 23:41:48,127:INFO: 2018-05-29 23:41:47 epoch 2, step 1, loss: 2.344, global_step: 793
