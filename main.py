@@ -30,7 +30,7 @@ parser.add_argument('--update_embedding', type=str2bool, default=True, help='upd
 parser.add_argument('--pretrain_embedding', type=str, default='random', help='use pretrained char embedding or init it randomly')
 parser.add_argument('--embedding_dim', type=int, default=300, help='random init char embedding_dim')
 parser.add_argument('--shuffle', type=str2bool, default=True, help='shuffle training data before each epoch')
-parser.add_argument('--mode', type=str, default='demo', help='train/test/demo')
+parser.add_argument('--mode', type=str, default='train', help='train/test/demo')
 parser.add_argument('--demo_model', type=str, default='1521112368', help='model for test and demo')
 args = parser.parse_args()
 
@@ -79,20 +79,25 @@ if args.mode == 'train':
     model = BiLSTM_CRF(args, embeddings, tag2label, word2id, paths, config=config, on_train=True)
     model.build_graph()
 
-    ## hyperparameters-tuning, split train/dev
-    # dev_data = train_data[:5000]; dev_size = len(dev_data)
-    # train_data = train_data[5000:]; train_size = len(train_data)
-    # print("train data: {0}\ndev data: {1}".format(train_size, dev_size))
-    # model.train(train=train_data, dev=dev_data)
+    # hyperparameters-tuning, split train/dev
+    dev_data = train_data[:5000]; dev_size = len(dev_data)
+    train_data = train_data[5000:]; train_size = len(train_data)
+    print("train data: {0}\ndev data: {1}".format(train_size, dev_size))
 
-    ## train model on the whole training data
-    print("train data: {}".format(len(train_data)))
-    model.train(train=train_data, dev=test_data)  # use test_data as the dev_data to see overfitting phenomena
+    # ckpt_file = r'.\data_path_save\1527663228\checkpoints\model-17136'
+    # paths['model_path'] = ckpt_file
+    # print(ckpt_file)
+    model.train(train=train_data, dev=dev_data)
+
+    # ## train model on the whole training data
+    # print("train data: {}".format(len(train_data)))
+    # model.train(train=train_data, dev=test_data)  # use test_data as the dev_data to see overfitting phenomena
 
 ## testing model
 elif args.mode == 'test':
     ckpt_file = tf.train.latest_checkpoint(model_path)
     print(ckpt_file)
+    # ckpt_file = r'.\data_path_save\1527697768\checkpoints\model-19992'
     paths['model_path'] = ckpt_file
     model = BiLSTM_CRF(args, embeddings, tag2label, word2id, paths, config=config)
     model.build_graph()
@@ -102,7 +107,7 @@ elif args.mode == 'test':
 ## demo
 elif args.mode == 'demo':
     ckpt_file = tf.train.latest_checkpoint(model_path)
-    print(ckpt_file)
+    print('ckpt_file:',ckpt_file)
     paths['model_path'] = ckpt_file
     model = BiLSTM_CRF(args, embeddings, tag2label, word2id, paths, config=config)
     model.build_graph()

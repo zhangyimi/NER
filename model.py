@@ -55,7 +55,7 @@ class BiLSTM_CRF(object):
         scale = tf.Variable(tf.ones([vec.shape[-1]]),name='scale')  # 需要训练，初始化为1，具体参考上面链接中图中公式的γ
         shift = tf.Variable(tf.zeros([vec.shape[-1]]),name='shift')  # 就是batch_normalization中的参数offset，这个参数是需要训练的，初始化为0，参考图中的β
         epsilon = 0.001  # 图中的ε，选取一个适当小的数就可以
-        ema = tf.train.ExponentialMovingAverage(decay=0.5,num_updates=self.step_num)
+        ema = tf.train.ExponentialMovingAverage(decay=0.99,num_updates=self.step_num)
         def mean_var_with_update():
             ema_apply_op = ema.apply([fc_mean, fc_var])
             # 下面control_dependencies和identity可以参考我的博客http://blog.csdn.net/u013061183/article/details/79335065
@@ -78,9 +78,10 @@ class BiLSTM_CRF(object):
             word_embeddings = tf.nn.embedding_lookup(params=_word_embeddings,
                                                      ids=self.word_ids,
                                                      name="word_embeddings")
-        # self.word_embeddings =  tf.nn.dropout(word_embeddings, self.dropout_pl)
         with tf.variable_scope('embeding_norm'):
             self.word_embeddings = self.Batch_normalization(word_embeddings)
+        self.word_embeddings =  tf.nn.dropout(word_embeddings, self.dropout_pl)
+
 
 
 
@@ -96,10 +97,11 @@ class BiLSTM_CRF(object):
                 sequence_length=self.sequence_lengths,
                 dtype=tf.float32)
             output = tf.concat([output_fw_seq, output_bw_seq], axis=-1)
-
-            with tf.variable_scope('lstm_scope'):
+            output = output * tf.layers.dense(output, self.hidden_dim * 2, activation=tf.nn.tanh,name='dense',
+                                                          kernel_initializer=tf.truncated_normal_initializer)
+            with tf.variable_scope('lstm_norm'):
                 output = self.Batch_normalization(output)
-            # output = tf.nn.dropout(output, self.dropout_pl)
+            output = tf.nn.dropout(output, self.dropout_pl)
 
 
         with tf.variable_scope("proj"):
@@ -108,14 +110,17 @@ class BiLSTM_CRF(object):
                                 initializer=tf.contrib.layers.xavier_initializer(),
                                 dtype=tf.float32)
 
-            b = tf.get_variable(name="b",
-                                shape=[self.num_tags],
-                                initializer=tf.zeros_initializer(),
-                                dtype=tf.float32)
+            # b = tf.get_variable(name="b",
+            #                     shape=[self.num_tags],
+            #                     initializer=tf.zeros_initializer(),
+            #                     dtype=tf.float32)
 
             s = tf.shape(output)
             output = tf.reshape(output, [-1, 2*self.hidden_dim])
-            pred = tf.matmul(output, W) + b
+            # pred = tf.matmul(output, W) + b
+            pred = tf.matmul(output, W)
+            with tf.variable_scope('dense_norm'):
+                pred = self.Batch_normalization(pred)
 
             self.logits = tf.reshape(pred, [-1, s[1], self.num_tags])
 
@@ -187,11 +192,13 @@ class BiLSTM_CRF(object):
         :return:
         """
         saver = tf.train.Saver(tf.global_variables())
+        # saver1 = tf.train.Saver()
 
         with tf.Session(config=self.config) as sess:
-            sess.run(self.init_op)
-            self.add_summary(sess)
+            # sess.run(self.init_op)
+            # saver1.restore(sess, r'.\data_path_save\1527663228\checkpoints\model-17136')
 
+            self.add_summary(sess)
             for epoch in range(self.epoch_num):
                 self.run_one_epoch(sess, train, dev, self.tag2label, epoch, saver)
 
@@ -232,19 +239,18 @@ class BiLSTM_CRF(object):
         :return:
         """
         num_batches = (len(train) + self.batch_size - 1) // self.batch_size
-
         start_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         batches = batch_yield(train, self.batch_size, self.vocab, self.tag2label, shuffle=self.shuffle)
         for step, (seqs, labels) in enumerate(batches):
             #相当print, input相当于sys.stdin.realine()
-            sys.stdout.write(' processing: {} batch / {} batches.'.format(step + 1, num_batches) + '\r')
+            sys.stdout.write(' processing: {} batch / {} batches. \n'.format(step + 1, num_batches) + '\r')
             self.step_num = epoch * num_batches + step + 1
             feed_dict, _ = self.get_feed_dict(seqs, labels, self.lr, self.dropout_keep_prob)
             _, loss_train, summary, step_num_ = sess.run([self.train_op, self.loss, self.merged, self.global_step],
                                                          feed_dict=feed_dict)
             if step + 1 == 1 or (step + 1) % 300 == 0 or step + 1 == num_batches:
                 self.logger.info(
-                    '{} epoch {}, step {}, loss: {:.4}, global_step: {}'.format(start_time, epoch + 1, step + 1,
+                    '{} epoch {}, step {}, loss: {:.4}, global_step: {} '.format(start_time, epoch + 1, step + 1,
                                                                                 loss_train, self.step_num))
 
             self.file_writer.add_summary(summary, self.step_num)
